@@ -15,7 +15,16 @@ cask "pwndbg-lldb" do
     strategy :github_latest
   end
 
-  binary "pwndbg/bin/pwndbg-lldb"
+  # shim script (https://github.com/Homebrew/homebrew-cask/issues/18809)
+  pwndbg_shimscript = "#{staged_path}/pwndbg.wrapper.sh"
+  binary pwndbg_shimscript, target: "pwndbg-lldb"
+
+  preflight do
+    File.write pwndbg_shimscript, <<~EOS
+      #!/bin/sh
+      exec '#{staged_path}/pwndbg/bin/pwndbg-lldb' "$@"
+    EOS
+  end
 
   zap trash: "~/.cache/pwndbg"
 end
